@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Agregar capa base de OpenStreetMap
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
         maxZoom: 21,
-        keepBuffer: 5 // Mantener en caché 2 tiles adyacentes
+        keepBuffer: 6 // Mantener en caché 2 tiles adyacentes
     }).addTo(map);
 
     // Configuración de las capas WMS
@@ -270,15 +270,17 @@ var highlightLayerGroup = L.layerGroup().addTo(map); // Grupo para almacenar los
 
     // Función para resaltar el objeto en el mapa
     function highlightMapFeature(feature) {
+        // Limpia cualquier resaltado previo
         highlightLayerGroup.clearLayers();
     
+        // Crear una capa para el objeto seleccionado con el marcador personalizado
         var highlightedLayer = L.geoJSON(feature, {
             pointToLayer: function (feature, latlng) {
                 return L.marker(latlng, {
                     icon: L.icon({
-                        iconUrl: 'https://www.iconsdb.com/icons/preview/red/map-marker-2-xxl.png', // Cambia aquí la URL de la imagen
-                        iconSize: [32, 32], // Ajusta el tamaño de la imagen
-                        iconAnchor: [16, 32], // Ajusta el punto de anclaje
+                        iconUrl: './assets/images/localizador.png', // Verifica que esta ruta sea correcta y accesible
+                        iconSize: [32, 32], // Tamaño del icono
+                        iconAnchor: [16, 32] // Punto de anclaje del icono
                     })
                 });
             },
@@ -289,7 +291,10 @@ var highlightLayerGroup = L.layerGroup().addTo(map); // Grupo para almacenar los
             }
         });
     
+        // Añade el objeto resaltado al grupo de capas de resaltado
         highlightLayerGroup.addLayer(highlightedLayer);
+    
+        // Centra el mapa en el objeto resaltado
         map.fitBounds(highlightedLayer.getBounds());
     }
 
@@ -329,7 +334,8 @@ var highlightLayerGroup = L.layerGroup().addTo(map); // Grupo para almacenar los
 
     // Evento para reiniciar el mapa al hacer clic en el botón
     document.getElementById('resetButton').addEventListener('click', function() {
-        map.setView(initialCenter, initialZoom); // Restablece el centro y el zoom
+        // Restablecer el centro y el zoom del mapa
+        map.setView(initialCenter, initialZoom);
     
         // Limpiar cualquier resaltado en el mapa (ya sea de un clic o doble clic)
         highlightLayerGroup.clearLayers();
@@ -337,7 +343,21 @@ var highlightLayerGroup = L.layerGroup().addTo(map); // Grupo para almacenar los
         // Limpiar la selección en la tabla de atributos
         var selectedRows = document.querySelectorAll('.attributes-table tr.selected');
         selectedRows.forEach(row => row.classList.remove('selected'));
+    
+        // Minimizar el panel de atributos y cambiar el texto del botón
+        var attributesPanel = document.getElementById('attributes-panel');
+        attributesPanel.classList.add('minimized'); // Minimiza el panel
+        document.getElementById('toggle-attributes').textContent = 'Despliegue de atributos';
+    
+        // Activar todas las capas de nuevo
+        Object.values(overlays).forEach(layer => {
+            if (!map.hasLayer(layer)) {
+                map.addLayer(layer);
+            }
+        });
+    
+        // Actualizar el panel de atributos para mostrar todas las tablas de atributos activas
+        updateActiveLayers();
     });
-
 
 });
